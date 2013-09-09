@@ -25,6 +25,7 @@ namespace ConsoleTester {
 
 		private static void MyMethod(Deferred<string, string> deferred, string obj) {
 			Console.WriteLine(obj);
+			throw new Exception("real test exception");
 			deferred.Reject(new Exception("test exception"));
 		}
 
