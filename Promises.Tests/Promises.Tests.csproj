@@ -39,13 +39,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GenericPromiseTests.cs" />
-    <Compile Include="ObjectPromiseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Promises.Net2Compatibility\Promises.Net2Compatibility.csproj">
+      <Project>{62e209a0-0bb5-45a8-b0ad-853979c7a2b9}</Project>
+      <Name>Promises.Net2Compatibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Promises\Promises.csproj">
       <Project>{dde6bd79-5c41-4c3e-98ef-083ca7a6634f}</Project>
       <Name>Promises</Name>

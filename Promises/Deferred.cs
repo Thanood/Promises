@@ -14,6 +14,14 @@ namespace Promises {
 		public Deferred() {
 			Promise = new Promise<T>();
 		}
+		public Deferred(Func<T> action) : this() {
+			try {
+				T result = action();
+				Resolve(result);
+			} catch (Exception e) {
+				Reject(e);
+			}
+		}
 		public void Resolve() {
 			Resolve(default(T));
 		}
