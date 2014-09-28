@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "xunit": "1.9.2",
+    "Pvc.Xunit": "0.1.0.6",
+    "Pvc.Core": "0.0.2.0",
+    "Pvc.MSBuild": "0.0.1.2"
+  }
+}

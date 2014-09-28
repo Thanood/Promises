@@ -1,58 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
-namespace Promises {
-	public class Deferred<TResult, TInput> {
-		public delegate void Action<CInput>(Deferred<TResult, CInput> deferred, CInput obj);
+namespace Infusion.Api.Promises {
+	public enum DeferredState {
+		Pending,
+		Resolved,
+		Rejected
+	}
 
-		Action<TInput> method;
-		IAsyncResult asyncResult;
-		PromiseState state;
-		Promise<TResult, TInput> promise;
-		TResult result;
-		Exception exception;
-
-		public Deferred(Action<TInput> method, TInput obj) {
-			this.method = method;
-			state = PromiseState.Pending;
-			promise = new Promise<TResult, TInput>(this);
-			asyncResult = method.BeginInvoke(this, obj, MasterCallback, null);
+	public class Deferred : IDeferred {
+		public Deferred() {
+			Promise = new Promise();
 		}
-
-		public void Resolve(TResult result) {
-			this.result = result;
-			state = PromiseState.Resolved;
-			promise.DequeueCallbacks(PromiseState.Resolved);
+		public void Resolve() {
+			Resolve(null);
 		}
-
-		public void Reject(Exception error) {
-			state = PromiseState.Rejected;
-			exception = error;
-			promise.DequeueCallbacks(PromiseState.Rejected);
+		public void Resolve(object value) {
+			(Promise as Promise).Finish(DeferredState.Resolved, value);
 		}
-
-		public void Progress() {
-			
+		public void Reject() {
+			Reject(null);
 		}
-
-		public Promise<TResult, TInput> Promise() {
-			return promise;
+		public void Reject(object value) {
+			(Promise as Promise).Finish(DeferredState.Rejected, value);
 		}
-
-		public PromiseState State { get { return state; } }
-
-		internal TResult Result { get { return result; } }
-		internal Exception Exception { get { return exception; } }
-
-		void MasterCallback(IAsyncResult ar) {
-			try {
-				if (state == PromiseState.Pending) {
-					method.EndInvoke(ar);
-				}
-			} catch (Exception error) {
-				Reject(error);
-			}
-		}
+		public IPromise Promise { get; private set; }
 	}
 }

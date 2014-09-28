@@ -1,85 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
-namespace Promises {
-	public enum PromiseState {
-		Pending,
-		Resolved,
-		Rejected
-	}
+namespace Infusion.Api.Promises {
+	public class Promise : IPromise {
+		readonly IList<Action<object>> onResolve;
+		readonly IList<Action<object>> onReject;
+		readonly object stateLock;
+		object value = null;
 
-	internal enum CallbackState {
-		Always,
-		Progress,
-		Resolved,
-		Rejected
-	}
-
-	public class Promise<TResult, TInput> {
-		Deferred<TResult, TInput> deferred;
-		Queue<Callback<TResult>> callbacks;
-		Queue<Callback<Exception>> exceptions;
-
-		internal Promise(Deferred<TResult, TInput> deferred) {
-			this.deferred = deferred;
-			callbacks = new Queue<Callback<TResult>>();
-			exceptions = new Queue<Callback<Exception>>();
+		internal Promise() {
+			onResolve = new List<Action<object>>();
+			onReject = new List<Action<object>>();
+			stateLock = new object();
+			State = DeferredState.Pending;
 		}
-
-		public Promise<TResult, TInput> Done(Action<TResult> callback) {
-			if (deferred.State == PromiseState.Pending) {
-				var cb = new Callback<TResult>(callback, CallbackState.Resolved);
-				callbacks.Enqueue(cb);
-			} else {
-				if (deferred.State == PromiseState.Resolved) {
-					callback(deferred.Result);
+		internal void Finish(DeferredState state, object value) {
+			lock (stateLock) {
+				this.value = value;
+				if (state == DeferredState.Resolved) {
+					foreach (var action in onResolve) {
+						action(this.value);
+					}
+				} else {
+					foreach (var action in onReject) {
+						action(this.value);
+					}
 				}
+				State = state;
 			}
-			return this;
 		}
 
-		public Promise<TResult, TInput> Fail(Action<Exception> callback) {
-			if (deferred.State == PromiseState.Pending) {
-				var cb = new Callback<Exception>(callback, CallbackState.Rejected);
-				exceptions.Enqueue(cb);
-			} else {
-				if (deferred.State == PromiseState.Rejected) {
-					callback(deferred.Exception);
+		public Promise Then(Action<object> resolveCallback, Action<object> rejectCallback) {
+			lock (stateLock) {
+				if (State == DeferredState.Pending) {
+					onResolve.Add(resolveCallback);
+					onReject.Add(rejectCallback);
+				} else {
+					if (State == DeferredState.Resolved) {
+						resolveCallback(this.value);
+					} else {
+						rejectCallback(this.value);
+					}
 				}
+				return this;
 			}
-			return this;
 		}
-
-		public Promise<TResult, TInput> Always(Action<TResult> callback) {
-			if (deferred.State == PromiseState.Pending) {
-				var cb = new Callback<TResult>(callback, CallbackState.Always);
-				callbacks.Enqueue(cb);
-			} else {
-				callback(deferred.Result);
-			}
-			return this;
-		}
-
-		internal void DequeueCallbacks(PromiseState promiseState) {
-			while (callbacks.Count > 0) {
-				var callback = callbacks.Dequeue();
-				if (callback.State == CallbackState.Always) {
-					callback.Call(deferred.Result);
-				} else if (promiseState == PromiseState.Resolved && callback.State == CallbackState.Resolved) {
-					callback.Call(deferred.Result);
-				} //else if (promiseState == PromiseState.Rejected && callback.State == CallbackState.Rejected) {
-				//	callback.Call(deferred.Result); // TODO: return error
-				//}
-			}
-			while (exceptions.Count > 0) {
-				var callback = exceptions.Dequeue();
-				if (callback.State == CallbackState.Always) {
-					callback.Call(deferred.Exception);
-				} else if (promiseState == PromiseState.Rejected && callback.State == CallbackState.Rejected) {
-					callback.Call(deferred.Exception);
+		public Promise Then(Action<object> resolveCallback) {
+			lock (stateLock) {
+				if (State == DeferredState.Pending) {
+					onResolve.Add(resolveCallback);
+				} else {
+					if (State == DeferredState.Resolved) {
+						resolveCallback(this.value);
+					}
 				}
+				return this;
 			}
 		}
+		public void Wait() {
+			while (State == DeferredState.Pending) {
+				Thread.Sleep(0);
+			}
+			return;
+		}
+		public DeferredState State { get; private set; }
 	}
 }
