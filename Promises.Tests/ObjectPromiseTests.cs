@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Infusion.Api.Promises;
+using Promises;
 using Xunit;
 
 namespace Promises.Tests {
 	public class ObjectPromiseTests {
 		[Fact]
 		public void CanResolve() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
 			dfd.Resolve();
@@ -18,13 +18,13 @@ namespace Promises.Tests {
 
 		[Fact]
 		public void CanResolveInAThread() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
 
 			ThreadPool.QueueUserWorkItem(d => {
 				Thread.Sleep(10);
-				(d as Deferred).Resolve();
+				(d as ObjectDeferred).Resolve();
 			}, dfd);
 
 			promise.Wait();
@@ -33,7 +33,7 @@ namespace Promises.Tests {
 
 		[Fact]
 		public void CanResolveWithValue() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
 			dfd.Resolve(true);
@@ -43,7 +43,7 @@ namespace Promises.Tests {
 
 		[Fact]
 		public void CanReject() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
 			dfd.Reject();
@@ -52,23 +52,23 @@ namespace Promises.Tests {
 
 		[Fact]
 		public void CanRejectWithValue() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
-			dfd.Reject(false);
+			dfd.Reject(new Exception("test exception"));
 			Assert.Equal<DeferredState>(DeferredState.Rejected, promise.State);
-			promise.Then(null, o => { Assert.Equal(false, (bool)o); });
+			promise.Then(null, ex => { Assert.Equal("test exception", ex.Message); });
 		}
 
 		[Fact]
 		public void CanRejectInAThread() {
-			Deferred dfd = new Deferred();
+			ObjectDeferred dfd = new ObjectDeferred();
 			var promise = dfd.Promise;
 			Assert.Equal<DeferredState>(DeferredState.Pending, promise.State);
 
 			ThreadPool.QueueUserWorkItem(d => {
 				Thread.Sleep(10);
-				(d as Deferred).Reject();
+				(d as ObjectDeferred).Reject();
 			}, dfd);
 
 			promise.Wait();

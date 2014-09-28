@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace Infusion.Api.Promises {
+namespace Promises {
 	public enum DeferredState {
 		Pending,
 		Resolved,
 		Rejected
 	}
 
-	public class Deferred : IDeferred {
+	public class Deferred<T> : IDeferred<T> {
 		public Deferred() {
-			Promise = new Promise();
+			Promise = new Promise<T>();
 		}
 		public void Resolve() {
-			Resolve(null);
+			Resolve(default(T));
 		}
-		public void Resolve(object value) {
-			(Promise as Promise).Finish(DeferredState.Resolved, value);
+		public void Resolve(T value) {
+			(Promise as Promise<T>).Resolve(value);
 		}
 		public void Reject() {
-			Reject(null);
+			Reject(default(Exception));
 		}
-		public void Reject(object value) {
-			(Promise as Promise).Finish(DeferredState.Rejected, value);
+		public void Reject(Exception exception) {
+			(Promise as Promise<T>).Reject(exception);
 		}
-		public IPromise Promise { get; private set; }
+		public IPromise<T> Promise { get; private set; }
 	}
 }

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Infusion.Api.Promises {
-	public interface IPromise {
+namespace Promises {
+	public interface IPromise<T> {
 		DeferredState State { get; }
-		Promise Then(Action<object> resolveCallback, Action<object> rejectCallback);
-		Promise Then(Action<object> resolveCallback);
-		void Wait();
+		Promise<T> Then(Action<T> resolveCallback, Action<Exception> rejectCallback);
+		Promise<T> Then(Action<T> resolveCallback);
+		void Wait(int timeout = 0);
 	}
 }

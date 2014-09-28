@@ -38,7 +38,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PromisesTests.cs" />
+    <Compile Include="GenericPromiseTests.cs" />
+    <Compile Include="ObjectPromiseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -38,8 +38,11 @@
     <Compile Include="Deferred.cs" />
     <Compile Include="IDeferred.cs" />
     <Compile Include="IPromise.cs" />
+    <Compile Include="ObjectDeferred.cs" />
+    <Compile Include="ObjectPromise.cs" />
     <Compile Include="Promise.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeoutException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
